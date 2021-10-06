@@ -68,8 +68,13 @@ RCT_EXPORT_METHOD(launchImageLibrary:(NSDictionary *)options callback:(RCTRespon
             PHPickerViewController *picker = [[PHPickerViewController alloc] initWithConfiguration:configuration];
             picker.delegate = self;
             picker.presentationController.delegate = self;
-
-            [self showPickerViewController:picker];
+            [self checkPermission:^(BOOL granted) {
+                if (!granted) {
+                    self.callback(@[@{@"errorCode": errPermission}]);
+                    return;
+                }
+                [self showPickerViewController:picker];
+            }];
             return;
         }
     }
@@ -261,12 +266,7 @@ RCT_EXPORT_METHOD(launchImageLibrary:(NSDictionary *)options callback:(RCTRespon
         [self checkCameraPermissions:permissionBlock];
     }
     else {
-        if (@available(iOS 11.0, *)) {
-            callback(YES);
-        }
-        else {
-            [self checkPhotosPermissions:permissionBlock];
-        }
+        [self checkPhotosPermissions:permissionBlock];
     }
 }
 
